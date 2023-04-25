@@ -1,12 +1,12 @@
 # 7-Zip SFX, However as invoker
 
-# How does it work?
+## How does it work?
 
 By embedding [no-admin.manifest](./no-admin.manifest) to 7-Zip SFX file, the self-extracting files will have following features:
 - Run under the AsInvoker permission
 - HighDPI support
 
-# Requirements
+## Requirements
 
 The necessary requirements are:
 - Windows SDK 10.X
@@ -17,7 +17,7 @@ What's more, in order to automate build, ensure following command-line tools in 
 - curl: download the 7z sdk and save it to `cache/download`
 
 
-# Build
+## Build
 
 ```
 python main.py
