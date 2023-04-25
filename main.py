@@ -4,6 +4,19 @@ from typing import Iterator
 from shutil import copyfile
 
 
+def init():
+    dir_list = [
+        "./build",
+        "./cache",
+        "./cache/download",
+        "./cache/sdk"
+    ]
+
+    for dir in dir_list:
+        dir_path = Path(dir)
+        dir_path.mkdir(exist_ok=True)
+
+
 def find_mt():
     output = subprocess.check_output(
         ["reg", "query", "HKLM\\SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "/reg:32"])
@@ -78,6 +91,7 @@ def extract_sdk(*version_list: Iterator[str]):
 
 if __name__ == "__main__":
     version_list = ["2201", "1900", "1604"]
+    init()
     download_sdk(*version_list)
     extract_sdk(*version_list)
     embed_manifest_for_all()
