@@ -15,8 +15,8 @@ def init():
         "./cache/sdk"
     ]
 
-    for dir in dir_list:
-        dir_path = Path(dir)
+    for folder in dir_list:
+        dir_path = Path(folder)
         dir_path.mkdir(exist_ok=True)
 
 
