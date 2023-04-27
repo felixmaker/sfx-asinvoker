@@ -4,7 +4,7 @@ from typing import Iterator
 from shutil import copyfile
 
 import os
-basedir = os.path.join(__file__)
+basedir = os.path.dirname(__file__)
 build_path = os.path.join(basedir,"build")
 
 def init():
