@@ -1,44 +1,51 @@
+import os.path
 import subprocess
+import urllib.request
+from os.path import join
 from pathlib import Path
 from typing import Iterator
 from shutil import copyfile
 
 
-def init():
-    dir_list = [
-        "./build",
-        "./cache",
-        "./cache/download",
-        "./cache/sdk"
-    ]
+def create_folder():
+    basedir = os.path.dirname(__file__)
+    folders = [join(basedir, "build"),
+               join(basedir, "cache"),
+               join(basedir, f"cache{os.sep}download"),
+               join(basedir, f"cache{os.sep}sdk")]
+    for path in folders:
+        os.mkdir(path) if not os.path.exists(path) else ...
 
-    for dir in dir_list:
-        dir_path = Path(dir)
-        dir_path.mkdir(exist_ok=True)
+
+def download_sdk():
+    version_list = ["2201", "1900", "1604"]
+    download_path = join(os.path.dirname(__file__), f"cache{os.sep}download")
+    for version in version_list:
+        filepath = join(download_path, f"{version}.7z")
+        urllib.request.urlretrieve(f"https://www.7-zip.org/a/lzma{version}.7z", filepath)
 
 
 def find_mt():
     output = subprocess.check_output(
         ["reg", "query", "HKLM\\SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "/reg:32"])
-
+    
     sdk_path = ""
     for line in output.decode().split("\r\n"):
         if line.strip().startswith("KitsRoot"):
             params = line.split("  ")
             sdk_path = Path(params[-1])
-
+    
     assert sdk_path != ""
     mt_path = list(sdk_path.glob("bin/*/x86/mt.exe"))
-
+    
     assert mt_path[0]
     return mt_path[0]
 
 
 def embed_manifest(sfx_path: Path, mt_path: Path | None = None):
-
     mt = mt_path or find_mt()
     assert sfx_path.is_file()
-
+    
     # https://learn.microsoft.com/en-us/windows/win32/sbscs/mt-exe
     subprocess.run(
         [mt, "-manifest", "no-admin.manifest", f"-outputresource:{sfx_path};#1"])
@@ -57,31 +64,15 @@ def embed_manifest_for_all():
         embed_manifest(sfx)
 
 
-def download(download_link: str, output: Path):
-    subprocess.run(
-        ["curl", download_link, "--output", output])
-
-
 def extract_7z(input: Path, output_dir: Path):
     subprocess.run(["7z", "x", input, f"-o{output_dir}"])
-
-
-def download_sdk(*version_list: Iterator[str]):
-    cache_path = Path("./cache/download")
-    cache_download = set(lzma7z.name for lzma7z in cache_path.glob("lzma*.7z"))
-
-    for version in version_list:
-        lzma7z = f"lzma{version}.7z"
-        if lzma7z not in cache_download:
-            download_link = f"https://www.7-zip.org/a/lzma{version}.7z"
-            download(download_link, cache_path.joinpath(lzma7z))
 
 
 def extract_sdk(*version_list: Iterator[str]):
     cache_path = Path("./cache/sdk")
     cache_sdk = set(lzma7z.name for lzma7z in cache_path.glob(
         "lzma*") if lzma7z.is_dir())
-
+    
     for version in version_list:
         sdk = f"lzma{version}"
         if sdk not in cache_sdk:
@@ -90,8 +81,7 @@ def extract_sdk(*version_list: Iterator[str]):
 
 
 if __name__ == "__main__":
-    version_list = ["2201", "1900", "1604"]
-    init()
-    download_sdk(*version_list)
-    extract_sdk(*version_list)
+    create_folder()
+    download_sdk()
+    extract_sdk(["2201", "1900", "1604"])
     embed_manifest_for_all()
