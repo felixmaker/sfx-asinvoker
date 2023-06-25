@@ -90,7 +90,7 @@ def extract_sdk(*version_list: Iterator[str]):
 
 
 if __name__ == "__main__":
-    version_list = ["2201", "1900", "1604"]
+    version_list = ["2301", "2201", "1900", "1604"]
     init()
     download_sdk(*version_list)
     extract_sdk(*version_list)
